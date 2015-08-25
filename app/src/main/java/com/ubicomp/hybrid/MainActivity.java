@@ -1,11 +1,11 @@
 package com.ubicomp.hybrid;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.FloatMath;
 import android.util.Log;
 import android.view.Menu;
@@ -16,8 +16,8 @@ import android.view.View.OnTouchListener;
 import android.widget.ImageView;
 
 
-public class MainActivity extends Activity implements OnTouchListener {
-    ImageView mImageView;
+public class MainActivity extends AppCompatActivity implements OnTouchListener {
+    private ImageView mImageView;
     private static final String TAG = "Touch";
     @SuppressWarnings("unused")
     private static final float MIN_ZOOM = 1f,MAX_ZOOM = 1f;
@@ -45,10 +45,10 @@ public class MainActivity extends Activity implements OnTouchListener {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ImageView view = (ImageView) findViewById(R.id.imageView);
+        mImageView = (ImageView) findViewById(R.id.imageView);
         Bitmap bm = BitmapFactory.decodeResource(getResources(),R.drawable.backgrd);
-        view.setImageBitmap(bm);
-        view.setOnTouchListener(this);
+        mImageView.setImageBitmap(bm);
+        mImageView.setOnTouchListener(this);
     }
 
     @Override
