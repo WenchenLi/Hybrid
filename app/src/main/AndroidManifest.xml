@@ -3,8 +3,8 @@
     package="com.ubicomp.hybrid" >
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.read_external_storage"/>
+    <uses-permission android:name="android.permission.write_external_storage"/>
     <uses-permission android:name="android.permission.INTERNET"/>
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -19,5 +19,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>
