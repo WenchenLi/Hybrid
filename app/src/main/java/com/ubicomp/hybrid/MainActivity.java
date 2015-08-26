@@ -13,14 +13,20 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 
 public class MainActivity extends AppCompatActivity implements OnTouchListener {
     private ImageView mImageView;
+    private Button mChoose;
+    private Button mTake;
+    private Button mShare;
+
     private static final String TAG = "Touch";
-    @SuppressWarnings("unused")
-    private static final float MIN_ZOOM = 1f,MAX_ZOOM = 1f;
+//    @SuppressWarnings("unused")
+//    private static final float MIN_ZOOM = 1f,MAX_ZOOM = 1f;
 
     // These matrices will be used to scale points of the image
     Matrix matrix = new Matrix();
@@ -37,18 +43,56 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     PointF mid = new PointF();
     float oldDist = 1f;
 
-
-
-    /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        //ImageView
         mImageView = (ImageView) findViewById(R.id.imageView);
         Bitmap bm = BitmapFactory.decodeResource(getResources(),R.drawable.backgrd);
         mImageView.setImageBitmap(bm);
+        Toast.makeText(getApplicationContext(),R.string.image_zoom,Toast.LENGTH_LONG).show();
         mImageView.setOnTouchListener(this);
+
+
+        //Choose from existing gallery
+        mChoose = (Button) findViewById(R.id.ChooseButton);
+        mChoose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+
+        //Take picture from mobile camera
+        mTake = (Button) findViewById(R.id.TakePictureButton);
+
+        mTake.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+
+        //TODO Share pic (maybe better gif to show the effect), so I guess we need a gif generator of two show the far and close view
+        mShare = (Button) findViewById(R.id.ShareButton);
+        mShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+
+
+
+
+
     }
 
     @Override
