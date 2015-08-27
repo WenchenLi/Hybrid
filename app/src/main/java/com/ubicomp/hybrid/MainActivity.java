@@ -1,8 +1,6 @@
 package com.ubicomp.hybrid;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -23,10 +21,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-
+import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
 
+import static com.ubicomp.hybrid.ImageProcessor.HybridTesttoBitmap;
 
 
 public class MainActivity extends AppCompatActivity implements OnTouchListener {
@@ -56,6 +55,12 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     PointF mid = new PointF();
     float oldDist = 1f;
 
+
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            // Handle initialization error
+        }
+    }
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -67,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         mImageView = (ImageView) findViewById(R.id.imageView);
 
         Bitmap bm = BitmapFactory.decodeResource(getResources(),R.drawable.backgrd);
+        mImageView.setImageBitmap(HybridTesttoBitmap());
         Toast.makeText(getApplicationContext(),R.string.image_zoom,Toast.LENGTH_LONG).show();
         mImageView.setOnTouchListener(this);
 
