@@ -10,4 +10,4 @@ lambda * v  = c, where c is the speed of the light, lambda is the wavelength and
 
 We have high pass filter and low pass filter to filter the image to high frequency part and low frequency part. 
 in 2d, Gaussian filter is a good example of low pass filter, all the energy concentrate at the low frequency domain.
-![alt tag](https://www.google.com/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=0CAcQjRxqFQoTCKyQm4-UyMcCFcMzPgodfDcAAg&url=https%3A%2F%2Fwww.clear.rice.edu%2Felec301%2FProjects01%2Fimage_filt%2Flow.html&ei=_m3eVayZN8Pn-AH87oAQ&psig=AFQjCNH0fGO-F8OIqNyqUQ5jcQii4Agivg&ust=1440726897038082)
+![low frequncy filter](https://www.clear.rice.edu/elec301/Projects01/image_filt/matlab/lpf_mesh.gif)
