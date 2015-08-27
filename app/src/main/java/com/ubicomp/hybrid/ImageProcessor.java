@@ -1,7 +1,7 @@
 package com.ubicomp.hybrid;
 
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -39,22 +39,13 @@ public class ImageProcessor {
         return ImageProcessor.Hybridize(far,close);
     }
 
-    static Bitmap HybridTesttoBitmap(){
-//        Mat far = new Mat();
-//        Utils.bitmapToMat(BitmapFactory.decodeResource(Resources.getSystem(), R.drawable.test1),far);
-//        Mat close = new Mat();
-//        Utils.bitmapToMat(BitmapFactory.decodeResource(Resources.getSystem(), R.drawable.test1),close);
-        String imageUri1 = "drawable://" + R.drawable.test1;
-        String imageUri2= "drawable://" + R.drawable.test2;
-
-
-        Mat far = Imgcodecs.imread(imageUri1);
-        Mat close = Imgcodecs.imread(imageUri2);
-        Bitmap bm = BitmapFactory.decodeResource(Resources.getSystem(),R.drawable.test1);
-
+    static Bitmap HybridTesttoBitmap(Context context){
+        Mat far = new Mat();
+        Mat close = new Mat();
+        Utils.bitmapToMat(BitmapFactory.decodeResource(context.getResources(), R.drawable.test1),far);
+        Utils.bitmapToMat(BitmapFactory.decodeResource(context.getResources(), R.drawable.test2),close);
+        Bitmap bm = BitmapFactory.decodeResource(context.getResources(),R.drawable.test2);
         Utils.matToBitmap(ImageProcessor.Hybridize(far, close),bm);
         return bm;
-
     }
-
 }

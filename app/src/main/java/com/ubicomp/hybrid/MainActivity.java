@@ -21,7 +21,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
 
 import java.io.File;
 
@@ -56,23 +59,29 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     float oldDist = 1f;
 
 
-    static {
-        if (!OpenCVLoader.initDebug()) {
-            // Handle initialization error
-        }
-    }
+//    static {
+//        if (!OpenCVLoader.initDebug()) {
+//            // Handle initialization error
+//        }
+//    }
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        if (!OpenCVLoader.initDebug()) {
+            Log.v(TAG,"fail loading opencv");
+            // Handle initialization error
+        }
 
         //ImageView
         mImageView = (ImageView) findViewById(R.id.imageView);
 
         Bitmap bm = BitmapFactory.decodeResource(getResources(),R.drawable.backgrd);
-        mImageView.setImageBitmap(HybridTesttoBitmap());
+//        mImageView.setImageBitmap(HybridTesttoBitmap());
+        mImageView.setImageBitmap(HybridTesttoBitmap(this));
+
         Toast.makeText(getApplicationContext(),R.string.image_zoom,Toast.LENGTH_LONG).show();
         mImageView.setOnTouchListener(this);
 
@@ -95,8 +104,6 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             public void onClick(View v) {
                 dispatchTakePictureIntent();
 
-
-
             }
         });
 
@@ -109,12 +116,6 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
 
             }
         });
-
-
-
-
-
-
     }
 
     @Override
@@ -294,4 +295,32 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             mImageView.setImageURI(imageUri);
         }
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        overridePendingTransition(0, 0);
+//        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
+    }
+
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                {
+
+                    Mat mat = new Mat();
+                    // Utils.bitmapToMat(input, mat);
+                    //     Highgui.imwrite("mat.jpg", mat);
+//                    mImageView.setImageBitmap(input);
+                    mImageView.setImageBitmap(HybridTesttoBitmap(getApplicationContext()));
+
+                } //break;
+                default:
+                {
+                    super.onManagerConnected(status);
+                } break;
+            }
+        }
+    };
 }
