@@ -1,10 +1,14 @@
 package com.ubicomp.hybrid;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.FloatMath;
 import android.util.Log;
@@ -17,11 +21,15 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.File;
+
 
 public class MainActivity extends AppCompatActivity implements OnTouchListener {
     private ImageView mImageView;
     private Button mChoose;
     private Button mTake;
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+
     private Button mShare;
 
     private static final String TAG = "Touch";
@@ -74,6 +82,9 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         mTake.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                dispatchTakePictureIntent();
+
+
 
             }
         });
@@ -241,5 +252,35 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    private void dispatchTakePictureIntent() {
+        String filename = Environment.getExternalStorageDirectory().getPath() + "/test/testfile.jpg";//TODO this is an variable
+        Log.v(TAG,"writing to external storage");
+        Uri imageUri = Uri.fromFile(new File(filename));
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT,
+                    imageUri);
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // we apply our filters at here.
+        // we should first ask user to choose from high pass filter or low pass filter to
+        // apply to the result image, notice they can apply both to separate the image.
+        // and then store the result in the local storage in (binary maybe
+        //  to save storage bitmap maybe more efficient, Need to check). We let the user decide which two pic to be the hybrid.
+        // We should have a browse storage separate view on left and right simutanuously for low frequency image
+        // and high frequency image
+        // feature we can have later: the object detection and
+        // search the boundary of the image.
+
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Log.v(TAG+"onActivityResult","image");
+            Uri  imageUri = data.getData();
+//            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            mImageView.setImageURI(imageUri);
+        }
     }
 }
