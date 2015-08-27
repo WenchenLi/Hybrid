@@ -1,6 +1,8 @@
 package com.ubicomp.hybrid;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -21,7 +23,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+
+
 import java.io.File;
+
 
 
 public class MainActivity extends AppCompatActivity implements OnTouchListener {
@@ -60,8 +65,8 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
 
         //ImageView
         mImageView = (ImageView) findViewById(R.id.imageView);
+
         Bitmap bm = BitmapFactory.decodeResource(getResources(),R.drawable.backgrd);
-        mImageView.setImageBitmap(bm);
         Toast.makeText(getApplicationContext(),R.string.image_zoom,Toast.LENGTH_LONG).show();
         mImageView.setOnTouchListener(this);
 
@@ -277,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         // search the boundary of the image.
 
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Log.v(TAG+"onActivityResult","image");
+            Log.v(TAG + "onActivityResult", "image");
             Uri  imageUri = data.getData();
 //            Bitmap imageBitmap = (Bitmap) extras.get("data");
             mImageView.setImageURI(imageUri);
