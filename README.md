@@ -6,7 +6,7 @@ hybrid pic of two image from high frequency to low frequency, such that people c
 Please add opencv to android studio according to [this] (http://stackoverflow.com/questions/27406303/opencv-in-android-studio), you can skip step 6 since jniLibs is already in the repo.
 
 The below part is for my own reference in the future:
-lambda * v  = c, where c is the speed of the light, lambda is the wavelength and v is the frequency of the lightwave. When sensor capture the image,it capture the complicated waves distribution of that moment through aperture. It's a discrete approximation of the natural light given the [Wave–particle duality}(https://en.wikipedia.org/wiki/Flicker_fusion_threshold) of light.
+lambda * v  = c, where c is the speed of the light, lambda is the wavelength and v is the frequency of the lightwave. When sensor capture the image,it capture the complicated waves distribution of that moment through aperture. It's a discrete approximation of the natural light given the [Wave–particle duality](https://en.wikipedia.org/wiki/Flicker_fusion_threshold) of light.
 
 We have high pass filter and low pass filter to filter the image to high frequency part and low frequency part. 
 in 2d, Gaussian filter is a good example of low pass filter, all the energy concentrate at the low frequency domain.
