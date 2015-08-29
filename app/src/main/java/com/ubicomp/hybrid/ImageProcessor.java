@@ -15,8 +15,9 @@ import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 
-import static org.opencv.core.Core.absdiff;
 import static org.opencv.core.Core.add;
+import static org.opencv.core.Core.subtract;
+
 /**
  * Created by ave on 8/27/15.
  */
@@ -29,11 +30,16 @@ public class ImageProcessor {
         Mat closeLowFreq= new Mat();
         Mat hybrid = new Mat();
 
-        Imgproc.GaussianBlur(far, lowFreq, new Size(7, 7), 2);
-        Imgproc.GaussianBlur(close, closeLowFreq, new Size(7, 7), 2);
+        Imgproc.GaussianBlur(far, lowFreq, new Size(29, 29), 7,7);
+        Imgproc.GaussianBlur(close, closeLowFreq, new Size(29, 29), 7,7);
+        SaveImage(lowFreq, "lowFreq.bmp");
+        SaveImage(closeLowFreq,"closeLowFreq.bmp");
 
-        absdiff(close, closeLowFreq, highFreq);
+        subtract(close, closeLowFreq, highFreq);
+        SaveImage(closeLowFreq, "highFreq.bmp");
+
         add(highFreq, lowFreq, hybrid);
+        SaveImage(hybrid,"hybrid.bmp");
 
         return hybrid;
     }
@@ -44,7 +50,7 @@ public class ImageProcessor {
         return ImageProcessor.Hybridize(far,close);
     }
 
-    static Bitmap HybridTesttoBitmap(Context context){
+    static Bitmap HybridTestToBitmap(Context context){
         Mat far = new Mat();
         Mat close = new Mat();
         Utils.bitmapToMat(BitmapFactory.decodeResource(context.getResources(), R.drawable.test1),far);
@@ -53,7 +59,7 @@ public class ImageProcessor {
         Utils.matToBitmap(ImageProcessor.Hybridize(far, close),bm);
         return bm;
     }
-    static void SaveImage (Mat mat,String filename) {
+    static private void SaveImage (Mat mat,String filename) {
         Mat mIntermediateMat = new Mat();
 
         Imgproc.cvtColor(mat, mIntermediateMat, Imgproc.COLOR_RGBA2BGR, 3);
@@ -70,7 +76,7 @@ public class ImageProcessor {
         else
             Log.d(TAG, "Fail writing image to external storage");
     }
-    static Mat LoadImage(String filename) {
+    static private Mat LoadImage(String filename) {
         Mat mIntermediateMat = new Mat();
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         File file = new File(path, filename);

@@ -28,7 +28,7 @@ import org.opencv.core.Mat;
 
 import java.io.File;
 
-import static com.ubicomp.hybrid.ImageProcessor.HybridTesttoBitmap;
+import static com.ubicomp.hybrid.ImageProcessor.HybridTestToBitmap;
 
 
 public class MainActivity extends AppCompatActivity implements OnTouchListener {
@@ -78,9 +78,8 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         //ImageView
         mImageView = (ImageView) findViewById(R.id.imageView);
 
-        Bitmap bm = BitmapFactory.decodeResource(getResources(),R.drawable.backgrd);
-//        mImageView.setImageBitmap(HybridTesttoBitmap());
-        mImageView.setImageBitmap(HybridTesttoBitmap(this));
+        //Bitmap bm = BitmapFactory.decodeResource(getResources(),R.drawable.backgrd);
+        mImageView.setImageBitmap(HybridTestToBitmap(this));
 
         Toast.makeText(getApplicationContext(),R.string.image_zoom,Toast.LENGTH_LONG).show();
         mImageView.setOnTouchListener(this);
@@ -313,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                     // Utils.bitmapToMat(input, mat);
                     //     Highgui.imwrite("mat.jpg", mat);
 //                    mImageView.setImageBitmap(input);
-                    mImageView.setImageBitmap(HybridTesttoBitmap(getApplicationContext()));
+                    mImageView.setImageBitmap(HybridTestToBitmap(getApplicationContext()));
 
                 } //break;
                 default:
