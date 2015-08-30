@@ -1,8 +1,6 @@
 package com.ubicomp.hybrid;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.net.Uri;
@@ -57,13 +55,6 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     PointF start = new PointF();
     PointF mid = new PointF();
     float oldDist = 1f;
-
-
-//    static {
-//        if (!OpenCVLoader.initDebug()) {
-//            // Handle initialization error
-//        }
-//    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
