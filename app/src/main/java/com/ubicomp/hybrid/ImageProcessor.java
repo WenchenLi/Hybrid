@@ -62,12 +62,13 @@ public class ImageProcessor {
         Utils.bitmapToMat(BitmapFactory.decodeResource(context.getResources(), R.drawable.test1), far);
         Utils.bitmapToMat(BitmapFactory.decodeResource(context.getResources(), R.drawable.test2), close);
         far.convertTo(far, CvType.CV_32F);
-        close.convertTo(close,CvType.CV_32F);
+        close.convertTo(close, CvType.CV_32F);
         Bitmap bm = BitmapFactory.decodeResource(context.getResources(), R.drawable.test2);
         Log.v(TAG+"far type:", Integer.toString(far.type()));
         Log.v(TAG + "close:", Integer.toString(close.type()));
-
-        Utils.matToBitmap(ImageProcessor.Hybridize(far, close,7),bm);
+        Mat hybrid = ImageProcessor.Hybridize(far, close,7);
+        hybrid.convertTo(hybrid,CvType.CV_8U);
+        Utils.matToBitmap(hybrid,bm);
         return bm;
     }
     static private void SaveImage (Mat mat,String filename) {
