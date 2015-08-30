@@ -10,6 +10,7 @@ import android.util.Log;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -18,6 +19,7 @@ import java.io.File;
 
 import static org.opencv.core.Core.BORDER_REFLECT;
 import static org.opencv.core.Core.add;
+import static org.opencv.core.Core.divide;
 import static org.opencv.core.Core.subtract;
 
 /**
@@ -26,23 +28,26 @@ import static org.opencv.core.Core.subtract;
 public class ImageProcessor {
     static final String TAG = "ImageProcessor";
 
-    static Mat Hybridize(Mat far, Mat close,int cutoff_frequency){
+    static Mat Hybridize(Mat far, Mat close, int cutoff_frequency){
         Mat highFreq = new Mat(close.height(),close.width(),CvType.CV_32F);
+        Log.d("HiFreq Depth", Integer.toString(highFreq.depth()));
         Mat lowFreq = new Mat(close.height(),close.width(),CvType.CV_32F);
         Mat closeLowFreq= new Mat(close.height(),close.width(),CvType.CV_32F);
         Mat hybrid = new Mat(close.height(),close.width(),CvType.CV_32F);
 
-        Imgproc.GaussianBlur(far, lowFreq, new Size(cutoff_frequency*4+1, cutoff_frequency*4+1), cutoff_frequency,cutoff_frequency,BORDER_REFLECT);
-        Imgproc.GaussianBlur(close, closeLowFreq, new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1), cutoff_frequency, cutoff_frequency,BORDER_REFLECT);
+        Imgproc.GaussianBlur(far, lowFreq, new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1), cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
+        Imgproc.GaussianBlur(close, closeLowFreq, new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1), cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
         SaveImage(far, "far.bmp");
-        SaveImage(close,"close.bmp");
+        SaveImage(close, "close.bmp");
 
 
         SaveImage(lowFreq, "lowFreq.bmp");
         SaveImage(closeLowFreq, "closeLowFreq.bmp");
 
         subtract(close, closeLowFreq, highFreq);
-        SaveImage(highFreq, "highFreq.bmp");
+        Mat highFreqVisualize = new Mat(close.height(),close.width(),CvType.CV_32F);
+        add(highFreq, new Scalar(127.5,127.5,127.5,127.5), highFreqVisualize);
+        SaveImage(highFreqVisualize, "highFreqVisualize.bmp");
 
         add(highFreq, lowFreq, hybrid);
         SaveImage(hybrid,"hybrid.bmp");
