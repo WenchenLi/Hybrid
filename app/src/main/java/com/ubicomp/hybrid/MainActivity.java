@@ -110,6 +110,13 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         mShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent share = new Intent(Intent.ACTION_SEND);
+                share.setType("image/*");
+                share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(
+                        new File(Environment
+                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"hybrid.jpg")));
+                startActivity(Intent.createChooser(share,"Share via"));
+
 
             }
         });

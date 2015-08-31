@@ -98,7 +98,9 @@ public class ImageProcessor {
 
         Mat hybrid = ImageProcessor.Hybridize(far, close,20);
         hybrid.convertTo(hybrid,CvType.CV_8U);
+        SaveMatImage(hybrid,"hybrid.jpg");
         Utils.matToBitmap(hybrid,first);
+
         return first;
     }
     static private void SaveMatImage (Mat mat,String filename) {
