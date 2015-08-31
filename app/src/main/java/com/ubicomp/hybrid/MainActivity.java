@@ -31,18 +31,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import static com.ubicomp.hybrid.ImageProcessor.HybridTestToBitmap;
+import static com.ubicomp.hybrid.ImageProcessor.HybridToBitmap;
 
 
 public class MainActivity extends AppCompatActivity implements OnTouchListener {
     private ImageView mImageView;
     private Button mChoose;
     private Button mTake;
-    static final int REQUEST_IMAGE_CAPTURE = 1;
+    private static  final String mStoragePath = Environment.getExternalStorageDirectory().getPath()+"/Hybrid/";
+
+    static final int REQUEST_IMAGE_CAPTURE1 = 1;
+    static final int REQUEST_IMAGE_CAPTURE2 = 2;
+
 
     private Button mShare;
 
-    private static final String TAG = "Touch";
-//    @SuppressWarnings("unused")
+    private static final String TAG = "MainActivity";
 //    private static final float MIN_ZOOM = 1f,MAX_ZOOM = 1f;
 
     // These matrices will be used to scale points of the image
@@ -69,14 +73,12 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             Log.v(TAG,"fail loading opencv");
             // Handle initialization error
         }
-
-
         //TODO load the previous saved hybrid image as default in mImageView
         //ImageView
         mImageView = (ImageView) findViewById(R.id.imageView);
 
         //Bitmap bm = BitmapFactory.decodeResource(getResources(),R.drawable.backgrd);
-        mImageView.setImageBitmap(HybridTestToBitmap(this));
+        mImageView.setImageBitmap(null);//HybridTestToBitmap(this));
 
         Toast.makeText(getApplicationContext(),R.string.image_zoom,Toast.LENGTH_LONG).show();
         mImageView.setOnTouchListener(this);
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         mTake.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openCameraForResult(REQUEST_IMAGE_CAPTURE);
+                openCameraForResult(REQUEST_IMAGE_CAPTURE1,"first.bmp");
             }
         });
 
@@ -260,9 +262,10 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         }
         return super.onOptionsItemSelected(item);
     }
-    private void openCameraForResult(int requestCode){
+    private void openCameraForResult(int requestCode,String picName){
         Intent photo = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        Uri uri  = Uri.parse("file:///sdcard/photo.jpg");
+//        String path = Environment.getExternalStorageDirectory().getPath()+"/";
+        Uri uri  = Uri.parse("file:///sdcard/"+picName);//"file:///sdcard/photo.jpg");
         photo.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uri);
         startActivityForResult(photo,requestCode);
     }
@@ -279,16 +282,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     }
 
 
-    private void dispatchTakePictureIntent() {
-        Log.v(TAG,"writing to external storage");
-        Uri imageUri = Uri.fromFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT,
-                    imageUri);
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-        }
-    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // we apply our filters at here.
@@ -301,21 +295,39 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         // feature we can have later: the object detection and
         // search the boundary of the image.
 
-//        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-//            Log.v(TAG + "onActivityResult", "image");
-//            Uri  imageUri = data.getData();
-////            Bitmap imageBitmap = (Bitmap) extras.get("data");
-//            mImageView.setImageURI(imageUri);
-//        }
-        if (requestCode == REQUEST_IMAGE_CAPTURE) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE1) {
             if (resultCode == Activity.RESULT_OK) {
-                File file = new File(Environment.getExternalStorageDirectory().getPath(), "photo.jpg");
+                File file = new File(Environment.getExternalStorageDirectory().getPath(), "first.bmp");
                 Uri uri = Uri.fromFile(file);
                 Bitmap bitmap;
                 try {
                     bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    bitmap = crupAndScale(bitmap, 300); // if you mind scaling
+                    bitmap = crupAndScale(bitmap, 450); // if you mind scaling
                     mImageView.setImageBitmap(bitmap);
+                    openCameraForResult(REQUEST_IMAGE_CAPTURE2,"second.bmp");//TODO  later worry about 08-31 12:06:40.450  14320-14320/com.ubicomp.hybrid E/ActivityThread﹕ Performing stop of activity that is not resumed: {com.ubicomp.hybrid/com.ubicomp.hybrid.MainActivity}
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+        else if (requestCode == REQUEST_IMAGE_CAPTURE2) {
+            if (resultCode == Activity.RESULT_OK) {
+                File file = new File(Environment.getExternalStorageDirectory().getPath(), "second.bmp");
+                Uri uri = Uri.fromFile(file);
+                Bitmap bitmap2;
+                try {
+                    bitmap2 = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                    bitmap2 = crupAndScale(bitmap2, 450); // if you mind scaling
+                    File file1 = new File(Environment.getExternalStorageDirectory().getPath(), "first.bmp");
+                    Uri uri1 = Uri.fromFile(file1);
+                    Bitmap bitmap1 = MediaStore.Images.Media.getBitmap(getContentResolver(), uri1);
+                    bitmap1 = crupAndScale(bitmap1, 450); // if you mind scaling
+
+                    mImageView.setImageBitmap(HybridToBitmap(this, bitmap1, bitmap2));
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -353,4 +365,15 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             }
         }
     };
+
+    //    private void dispatchTakePictureIntent() {
+//        Log.v(TAG,"writing to external storage");
+//        Uri imageUri = Uri.fromFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
+//        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+//            takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT,
+//                    imageUri);
+//            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE1);
+//        }
+//    }
 }

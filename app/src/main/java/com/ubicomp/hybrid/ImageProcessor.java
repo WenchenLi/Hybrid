@@ -88,6 +88,19 @@ public class ImageProcessor {
         Utils.matToBitmap(hybrid,bm);
         return bm;
     }
+
+    static Bitmap HybridToBitmap(Context context, Bitmap first,Bitmap second){
+        Mat far = new Mat(first.getHeight(),first.getWidth(),CvType.CV_32F);
+        Mat close = new Mat(second.getHeight(),second.getWidth(),CvType.CV_32F);
+        Utils.bitmapToMat(first, far);
+        Utils.bitmapToMat(second, close);
+//        Bitmap bm = BitmapFactory.decodeFile("file:///sdcard/first.bmp");
+
+        Mat hybrid = ImageProcessor.Hybridize(far, close,20);
+        hybrid.convertTo(hybrid,CvType.CV_8U);
+        Utils.matToBitmap(hybrid,first);
+        return first;
+    }
     static private void SaveMatImage (Mat mat,String filename) {
         Mat mIntermediateMat = new Mat();
 
