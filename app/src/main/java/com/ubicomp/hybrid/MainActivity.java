@@ -1,6 +1,8 @@
 package com.ubicomp.hybrid;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.net.Uri;
@@ -25,6 +27,8 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import static com.ubicomp.hybrid.ImageProcessor.HybridTestToBitmap;
 
@@ -66,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             // Handle initialization error
         }
 
+
+        //TODO load the previous saved hybrid image as default in mImageView
         //ImageView
         mImageView = (ImageView) findViewById(R.id.imageView);
 
@@ -92,8 +98,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         mTake.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dispatchTakePictureIntent();
-
+                openCameraForResult(REQUEST_IMAGE_CAPTURE);
             }
         });
 
@@ -255,10 +260,28 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         }
         return super.onOptionsItemSelected(item);
     }
+    private void openCameraForResult(int requestCode){
+        Intent photo = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Uri uri  = Uri.parse("file:///sdcard/photo.jpg");
+        photo.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uri);
+        startActivityForResult(photo,requestCode);
+    }
+
+
+    public static  Bitmap crupAndScale (Bitmap source,int scale){
+        int factor = source.getHeight() <= source.getWidth() ? source.getHeight(): source.getWidth();
+        int longer = source.getHeight() >= source.getWidth() ? source.getHeight(): source.getWidth();
+        int x = source.getHeight() >= source.getWidth() ?0:(longer-factor)/2;
+        int y = source.getHeight() <= source.getWidth() ?0:(longer-factor)/2;
+        source = Bitmap.createBitmap(source, x, y, factor, factor);
+        source = Bitmap.createScaledBitmap(source, scale, scale, false);
+        return source;
+    }
+
+
     private void dispatchTakePictureIntent() {
-        String filename = Environment.getExternalStorageDirectory().getPath() + "/test/testfile.jpg";//TODO this is an variable
         Log.v(TAG,"writing to external storage");
-        Uri imageUri = Uri.fromFile(new File(filename));
+        Uri imageUri = Uri.fromFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT,
@@ -278,11 +301,28 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         // feature we can have later: the object detection and
         // search the boundary of the image.
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Log.v(TAG + "onActivityResult", "image");
-            Uri  imageUri = data.getData();
-//            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            mImageView.setImageURI(imageUri);
+//        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+//            Log.v(TAG + "onActivityResult", "image");
+//            Uri  imageUri = data.getData();
+////            Bitmap imageBitmap = (Bitmap) extras.get("data");
+//            mImageView.setImageURI(imageUri);
+//        }
+        if (requestCode == REQUEST_IMAGE_CAPTURE) {
+            if (resultCode == Activity.RESULT_OK) {
+                File file = new File(Environment.getExternalStorageDirectory().getPath(), "photo.jpg");
+                Uri uri = Uri.fromFile(file);
+                Bitmap bitmap;
+                try {
+                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                    bitmap = crupAndScale(bitmap, 300); // if you mind scaling
+                    mImageView.setImageBitmap(bitmap);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
         }
     }
     @Override
