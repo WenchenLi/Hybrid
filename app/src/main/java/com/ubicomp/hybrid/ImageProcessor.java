@@ -19,7 +19,6 @@ import java.io.File;
 
 import static org.opencv.core.Core.BORDER_REFLECT;
 import static org.opencv.core.Core.add;
-import static org.opencv.core.Core.divide;
 import static org.opencv.core.Core.subtract;
 
 /**
@@ -30,27 +29,40 @@ public class ImageProcessor {
 
     static Mat Hybridize(Mat far, Mat close, int cutoff_frequency){
         Mat highFreq = new Mat(close.height(),close.width(),CvType.CV_32F);
-        Log.d("HiFreq Depth", Integer.toString(highFreq.depth()));
+//        Log.d("HiFreq Depth", Integer.toString(highFreq.depth()));
         Mat lowFreq = new Mat(close.height(),close.width(),CvType.CV_32F);
         Mat closeLowFreq= new Mat(close.height(),close.width(),CvType.CV_32F);
         Mat hybrid = new Mat(close.height(),close.width(),CvType.CV_32F);
+//        cutoff_frequency = 20;
+//        int size = (int) far.total() * far.channels();
+//        double[] buff = new double[size];
+//        far.get(0, 0, buff);
+//        for(int i = 0; i < size; i++)
+//        {
+//            Log.v(TAG+"element", String.valueOf(buff[i]));
+//        }
+
+        // convert to cv32
+//        far.convertTo(far, CvType.CV_32F, 0.004);
+//        close.convertTo(close,CvType.CV_32F,0.004);
+
 
         Imgproc.GaussianBlur(far, lowFreq, new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1), cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
         Imgproc.GaussianBlur(close, closeLowFreq, new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1), cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
-        SaveImage(far, "far.bmp");
-        SaveImage(close, "close.bmp");
-
-
-        SaveImage(lowFreq, "lowFreq.bmp");
-        SaveImage(closeLowFreq, "closeLowFreq.bmp");
+//        SaveMatImage(far, "far.bmp");
+//        SaveMatImage(close, "close.bmp");
+//        SaveMatImage(lowFreq, "lowFreq.bmp");
+//        SaveMatImage(closeLowFreq, "closeLowFreq.bmp");
 
         subtract(close, closeLowFreq, highFreq);
+//        SaveMatImage(highFreq,"highFreq.bmp");
         Mat highFreqVisualize = new Mat(close.height(),close.width(),CvType.CV_32F);
         add(highFreq, new Scalar(127.5,127.5,127.5,127.5), highFreqVisualize);
-        SaveImage(highFreqVisualize, "highFreqVisualize.bmp");
-
+//        SaveMatImage(highFreqVisualize, "highFreqVisualize.bmp");
         add(highFreq, lowFreq, hybrid);
-        SaveImage(hybrid,"hybrid.bmp");
+        //convert back to cv8u
+//        highFreq.convertTo(highFreq, CvType.CV_8U, 250);
+//        SaveMatImage(hybrid,"hybrid.bmp");
 
         return hybrid;
     }
@@ -69,14 +81,14 @@ public class ImageProcessor {
         far.convertTo(far, CvType.CV_32F);
         close.convertTo(close, CvType.CV_32F);
         Bitmap bm = BitmapFactory.decodeResource(context.getResources(), R.drawable.test2);
-        Log.v(TAG+"far type:", Integer.toString(far.type()));
-        Log.v(TAG + "close:", Integer.toString(close.type()));
-        Mat hybrid = ImageProcessor.Hybridize(far, close,7);
+//        Log.v(TAG+"far type:", Integer.toString(far.type()));
+//        Log.v(TAG + "close:", Integer.toString(close.type()));
+        Mat hybrid = ImageProcessor.Hybridize(far, close,20);
         hybrid.convertTo(hybrid,CvType.CV_8U);
         Utils.matToBitmap(hybrid,bm);
         return bm;
     }
-    static private void SaveImage (Mat mat,String filename) {
+    static private void SaveMatImage (Mat mat,String filename) {
         Mat mIntermediateMat = new Mat();
 
         Imgproc.cvtColor(mat, mIntermediateMat, Imgproc.COLOR_BGR2RGB, 3);
@@ -93,7 +105,7 @@ public class ImageProcessor {
         else
             Log.d(TAG, "Fail writing image to external storage");
     }
-    static private Mat LoadImage(String filename) {
+    static private Mat LoadMatImage(String filename) {
         Mat mIntermediateMat = new Mat();
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         File file = new File(path, filename);
