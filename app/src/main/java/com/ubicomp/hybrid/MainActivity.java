@@ -73,6 +73,10 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             Log.v(TAG,"fail loading opencv");
             // Handle initialization error
         }
+        //set face boundary
+        startService(new Intent(getApplicationContext(), DrawBoundaryService.class));
+
+
         //TODO load the previous saved hybrid image as default in mImageView
         //ImageView
         mImageView = (ImageView) findViewById(R.id.imageView);
@@ -270,6 +274,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         return super.onOptionsItemSelected(item);
     }
     private void openCameraForResult(int requestCode,String picName){
+
         Intent photo = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 //        String path = Environment.getExternalStorageDirectory().getPath()+"/";
         Uri uri  = Uri.parse("file:///sdcard/"+picName);//"file:///sdcard/photo.jpg");
