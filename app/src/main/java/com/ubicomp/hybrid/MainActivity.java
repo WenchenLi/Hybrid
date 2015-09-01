@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     static final int REQUEST_IMAGE_CAPTURE1 = 1;
     static final int REQUEST_IMAGE_CAPTURE2 = 2;
 
-
+    private Intent mDrawBoundaryIntent;
     private Button mShare;
 
     private static final String TAG = "MainActivity";
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             // Handle initialization error
         }
         //set face boundary
-        startService(new Intent(getApplicationContext(), DrawBoundaryService.class));
+        mDrawBoundaryIntent = new Intent(getApplicationContext(), DrawBoundaryService.class);
 
 
         //TODO load the previous saved hybrid image as default in mImageView
@@ -353,7 +353,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     public void onResume() {
         super.onResume();
         overridePendingTransition(0, 0);
-//        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
+        startService(mDrawBoundaryIntent);
     }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -377,6 +377,11 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             }
         }
     };
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopService(mDrawBoundaryIntent);
+    }
 
     //    private void dispatchTakePictureIntent() {
 //        Log.v(TAG,"writing to external storage");
