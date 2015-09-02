@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         mTake.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                startService(mDrawBoundaryIntent);
                 openCameraForResult(REQUEST_IMAGE_CAPTURE1,"first.bmp");
             }
         });
@@ -328,6 +329,11 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         }
         else if (requestCode == REQUEST_IMAGE_CAPTURE2) {
             if (resultCode == Activity.RESULT_OK) {
+                try{
+                    stopService(mDrawBoundaryIntent);
+                }catch (NullPointerException e){
+
+                }
                 File file = new File(Environment.getExternalStorageDirectory().getPath(), "second.bmp");
                 Uri uri = Uri.fromFile(file);
                 Bitmap bitmap2;
@@ -352,8 +358,8 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     @Override
     public void onResume() {
         super.onResume();
+        Log.v(TAG,"onresume");
         overridePendingTransition(0, 0);
-        startService(mDrawBoundaryIntent);
     }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -380,7 +386,6 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     @Override
     public void onPause() {
         super.onPause();
-        stopService(mDrawBoundaryIntent);
     }
 
     //    private void dispatchTakePictureIntent() {
