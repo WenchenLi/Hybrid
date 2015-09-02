@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Environment;
@@ -49,6 +50,7 @@ public class ImageProcessor {
 //        far.convertTo(far, CvType.CV_32F, 0.004);
 //        close.convertTo(close,CvType.CV_32F,0.004);
 
+//        byte buff[] = new byte[m.total() * m.channels()];
 
         Imgproc.GaussianBlur(far, lowFreq, new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1), cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
         Imgproc.GaussianBlur(close, closeLowFreq, new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1), cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
@@ -62,6 +64,8 @@ public class ImageProcessor {
         Mat highFreqVisualize = new Mat(close.height(),close.width(),CvType.CV_32F);
         add(highFreq, new Scalar(127.5,127.5,127.5,127.5), highFreqVisualize);
 //        SaveMatImage(highFreqVisualize, "highFreqVisualize.bmp");
+       // Canny(close, highFreq, 300, 600, 5, true);// or laplacian filter
+
         add(highFreq, lowFreq, hybrid);
         //convert back to cv8u
 //        highFreq.convertTo(highFreq, CvType.CV_8U, 250);
@@ -135,9 +139,9 @@ public class ImageProcessor {
         Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bm);
         Paint p = new Paint();//Paint.ANTI_ALIAS_FLAG
-        p.setAlpha(90);
-        p.setColor(0xFFFFCC44);
+        p.setColor(Color.argb(90,200,200,0));
         c.drawOval(new RectF(0, 0, w * 3 / 4, h * 3 / 4), p);
+
         return bm;
     }
 //    static private Mat Cv8Uto32f(){

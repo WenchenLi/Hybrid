@@ -17,7 +17,7 @@ import android.widget.Toast;
  * Created by wenchen on 8/31/15.
  */
 public class DrawBoundaryService extends Service {
-    private DrawBoundary db;
+//    private DrawBoundary db;
     private WindowManager windowManager;
     private ImageView chatHead;
     private String TAG = "DrawBoundaryService";
@@ -46,9 +46,9 @@ public class DrawBoundaryService extends Service {
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                PixelFormat.TRANSLUCENT);
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                PixelFormat.RGBA_8888);
 
         params.gravity = Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL;
         params.x = 0;
