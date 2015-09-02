@@ -276,6 +276,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     }
     private void openCameraForResult(int requestCode,String picName){
 
+
         Intent photo = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 //        String path = Environment.getExternalStorageDirectory().getPath()+"/";
         Uri uri  = Uri.parse("file:///sdcard/"+picName);//"file:///sdcard/photo.jpg");
@@ -351,8 +352,11 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
+        }
+        else{
+            Log.v(TAG,"onActivityResult else");
+
         }
     }
     @Override
@@ -360,6 +364,11 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         super.onResume();
         Log.v(TAG,"onresume");
         overridePendingTransition(0, 0);
+        try{
+            stopService(mDrawBoundaryIntent);
+        }catch (NullPointerException e){
+
+        }
     }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -383,9 +392,30 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             }
         }
     };
+
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        try{
+            stopService(mDrawBoundaryIntent);
+        }catch (NullPointerException e){
+
+        }
+
+    }
     @Override
     public void onPause() {
         super.onPause();
+
+    }
+    @Override
+    public void onStop(){
+        super.onStop();
+    }
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+
     }
 
     //    private void dispatchTakePictureIntent() {

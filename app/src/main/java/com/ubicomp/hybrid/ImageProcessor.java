@@ -4,6 +4,9 @@ package com.ubicomp.hybrid;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.os.Environment;
 import android.util.Log;
 
@@ -98,7 +101,7 @@ public class ImageProcessor {
 
         Mat hybrid = ImageProcessor.Hybridize(far, close,20);
         hybrid.convertTo(hybrid,CvType.CV_8U);
-        SaveMatImage(hybrid,"hybrid.jpg");
+        SaveMatImage(hybrid, "hybrid.jpg");
         Utils.matToBitmap(hybrid,first);
 
         return first;
@@ -127,6 +130,15 @@ public class ImageProcessor {
         filename = file.toString();
         mIntermediateMat = Imgcodecs.imread(filename);
         return mIntermediateMat;
+    }
+    static Bitmap makeDst(int w, int h) {
+        Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bm);
+        Paint p = new Paint();//Paint.ANTI_ALIAS_FLAG
+        p.setAlpha(90);
+        p.setColor(0xFFFFCC44);
+        c.drawOval(new RectF(0, 0, w * 3 / 4, h * 3 / 4), p);
+        return bm;
     }
 //    static private Mat Cv8Uto32f(){
 //        Mat maskColor = new Mat( mBitmapPintar.getHeight(), mBitmapPintar.getWidth(), CvType.CV_8UC3);
