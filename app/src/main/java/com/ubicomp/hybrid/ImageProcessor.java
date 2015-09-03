@@ -31,26 +31,39 @@ import static org.opencv.core.Core.subtract;
 public class ImageProcessor {
     static final String TAG = "ImageProcessor";
 
+    static Bitmap LowPass(Bitmap image, int cutoff_frequency){
+        Mat lowFreq = new Mat(image.getHeight(),image.getWidth(),CvType.CV_8U);
+        Utils.bitmapToMat(image, lowFreq);
+
+        Imgproc.GaussianBlur(lowFreq, lowFreq,
+                new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1),
+                cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
+
+        Utils.matToBitmap(lowFreq,image);
+        return image;
+    }
+    static Bitmap HighPass(Bitmap image, int cutoff_frequency){
+        Mat original = new Mat(image.getHeight(),image.getWidth(),CvType.CV_32F);
+        Mat lowFreq = new Mat(image.getHeight(),image.getWidth(),CvType.CV_32F);
+        Mat highFreq = new Mat(image.getHeight(),image.getWidth(),CvType.CV_32F);
+
+        Utils.bitmapToMat(image, original);
+        Imgproc.GaussianBlur(original, lowFreq,
+                new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1),
+                cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
+        subtract(original, lowFreq, highFreq);
+        add(highFreq, new Scalar(127.5, 127.5, 127.5, 127.5), highFreq);
+        highFreq.convertTo(highFreq,CvType.CV_8U);
+        Utils.matToBitmap(highFreq,image);
+        return image;
+    }
+
     static Mat Hybridize(Mat far, Mat close, int cutoff_frequency){
         Mat highFreq = new Mat(close.height(),close.width(),CvType.CV_32F);
 //        Log.d("HiFreq Depth", Integer.toString(highFreq.depth()));
         Mat lowFreq = new Mat(close.height(),close.width(),CvType.CV_32F);
         Mat closeLowFreq= new Mat(close.height(),close.width(),CvType.CV_32F);
         Mat hybrid = new Mat(close.height(),close.width(),CvType.CV_32F);
-//        cutoff_frequency = 20;
-//        int size = (int) far.total() * far.channels();
-//        double[] buff = new double[size];
-//        far.get(0, 0, buff);
-//        for(int i = 0; i < size; i++)
-//        {
-//            Log.v(TAG+"element", String.valueOf(buff[i]));
-//        }
-
-        // convert to cv32
-//        far.convertTo(far, CvType.CV_32F, 0.004);
-//        close.convertTo(close,CvType.CV_32F,0.004);
-
-//        byte buff[] = new byte[m.total() * m.channels()];
 
         Imgproc.GaussianBlur(far, lowFreq, new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1), cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
         Imgproc.GaussianBlur(close, closeLowFreq, new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1), cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
