@@ -2,12 +2,16 @@ package com.ubicomp.hybrid;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.FloatMath;
@@ -27,6 +31,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -42,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
 
     static final int REQUEST_IMAGE_CAPTURE1 = 1;
     static final int REQUEST_IMAGE_CAPTURE2 = 2;
+    static final int CHOOSE_IMAGE_REQUEST = 3;
 
     private Intent mDrawBoundaryIntent;
     private Button mShare;
@@ -63,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     PointF start = new PointF();
     PointF mid = new PointF();
     float oldDist = 1f;
+    private String selectedImagePath;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -93,6 +100,13 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         mChoose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent,
+                        "Select Picture"), CHOOSE_IMAGE_REQUEST);
+//                Intent i = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//                startActivityForResult(i, CHOOSE_IMAGE_REQUEST);
 
             }
         });
@@ -104,7 +118,6 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         mTake.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startService(mDrawBoundaryIntent);
                 openCameraForResult(REQUEST_IMAGE_CAPTURE1,"first.bmp");
             }
         });
@@ -275,8 +288,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         return super.onOptionsItemSelected(item);
     }
     private void openCameraForResult(int requestCode,String picName){
-
-
+//        startService(mDrawBoundaryIntent);
         Intent photo = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 //        String path = Environment.getExternalStorageDirectory().getPath()+"/";
         Uri uri  = Uri.parse("file:///sdcard/"+picName);//"file:///sdcard/photo.jpg");
@@ -308,9 +320,9 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         // and high frequency image
         // feature we can have later: the object detection and
         // search the boundary of the image.
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == REQUEST_IMAGE_CAPTURE1) {
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE1) {
-            if (resultCode == Activity.RESULT_OK) {
                 File file = new File(Environment.getExternalStorageDirectory().getPath(), "first.bmp");
                 Uri uri = Uri.fromFile(file);
                 Bitmap bitmap;
@@ -318,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                     bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     bitmap = crupAndScale(bitmap, 450); // if you mind scaling
                     mImageView.setImageBitmap(bitmap);
-                    openCameraForResult(REQUEST_IMAGE_CAPTURE2,"second.bmp");//TODO  later worry about 08-31 12:06:40.450  14320-14320/com.ubicomp.hybrid E/ActivityThread﹕ Performing stop of activity that is not resumed: {com.ubicomp.hybrid/com.ubicomp.hybrid.MainActivity}
+                    openCameraForResult(REQUEST_IMAGE_CAPTURE2, "second.bmp");//TODO  later worry about 08-31 12:06:40.450  14320-14320/com.ubicomp.hybrid E/ActivityThread﹕ Performing stop of activity that is not resumed: {com.ubicomp.hybrid/com.ubicomp.hybrid.MainActivity}
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -326,39 +338,59 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                     e.printStackTrace();
                 }
 
-            }
-        }
-        else if (requestCode == REQUEST_IMAGE_CAPTURE2) {
-            if (resultCode == Activity.RESULT_OK) {
-                try{
-                    stopService(mDrawBoundaryIntent);
-                }catch (NullPointerException e){
+            } else if (requestCode == REQUEST_IMAGE_CAPTURE2) {
+                    try {
+                        stopService(mDrawBoundaryIntent);
+                    } catch (NullPointerException e) {
 
+                    }
+                    File file = new File(Environment.getExternalStorageDirectory().getPath(), "second.bmp");
+                    Uri uri = Uri.fromFile(file);
+                    Bitmap bitmap2;
+                    try {
+                        bitmap2 = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                        bitmap2 = crupAndScale(bitmap2, 450); // if you mind scaling
+                        File file1 = new File(Environment.getExternalStorageDirectory().getPath(), "first.bmp");
+                        Uri uri1 = Uri.fromFile(file1);
+                        Bitmap bitmap1 = MediaStore.Images.Media.getBitmap(getContentResolver(), uri1);
+                        bitmap1 = crupAndScale(bitmap1, 450); // if you mind scaling
+
+                        mImageView.setImageBitmap(HybridToBitmap(this, bitmap1, bitmap2));
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-                File file = new File(Environment.getExternalStorageDirectory().getPath(), "second.bmp");
-                Uri uri = Uri.fromFile(file);
-                Bitmap bitmap2;
-                try {
-                    bitmap2 = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    bitmap2 = crupAndScale(bitmap2, 450); // if you mind scaling
-                    File file1 = new File(Environment.getExternalStorageDirectory().getPath(), "first.bmp");
-                    Uri uri1 = Uri.fromFile(file1);
-                    Bitmap bitmap1 = MediaStore.Images.Media.getBitmap(getContentResolver(), uri1);
-                    bitmap1 = crupAndScale(bitmap1, 450); // if you mind scaling
+             else if (requestCode == CHOOSE_IMAGE_REQUEST) {
+                Uri selectedImageUri = data.getData();
+                if (Build.VERSION.SDK_INT < 19) {
+                    selectedImagePath = getPath(selectedImageUri);
+                    Bitmap bitmap = BitmapFactory.decodeFile(selectedImagePath);
+                    //                imageView.setImageBitmap(bitmap);
 
-                    mImageView.setImageBitmap(HybridToBitmap(this, bitmap1, bitmap2));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } else {
+                    ParcelFileDescriptor parcelFileDescriptor;
+                    try {
+                        parcelFileDescriptor = getContentResolver().openFileDescriptor(selectedImageUri, "r");
+                        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+                        Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+                        parcelFileDescriptor.close();
+                        //                    imageView.setImageBitmap(image);
+
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-        }
-        else{
-            Log.v(TAG,"onActivityResult else");
-
+            else {
+                Log.v(TAG, "onActivityResult else");
+            }
         }
     }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -417,7 +449,20 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         super.onDestroy();
 
     }
-
+    public String getPath(Uri uri) {
+        if( uri == null ) {
+            return null;
+        }
+        String[] projection = { MediaStore.Images.Media.DATA };
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if( cursor != null ){
+            int column_index = cursor
+                    .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        }
+        return uri.getPath();
+    }
     //    private void dispatchTakePictureIntent() {
 //        Log.v(TAG,"writing to external storage");
 //        Uri imageUri = Uri.fromFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
