@@ -408,16 +408,40 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                 if (Build.VERSION.SDK_INT < 19) {
                     selectedImagePath = getPath(selectedImageUri);
                     Bitmap bitmap = BitmapFactory.decodeFile(selectedImagePath);
-                    mImageView.setImageBitmap(LowPass(bitmap,15));// TODO async
+                    if(filter_pass_option == REQUEST_IMAGE_CAPTURE_LOW_PASS) {
+                        mImageView.setImageBitmap(LowPass(bitmap, 15));// TODO async
+                    }
+                    else {
+
+                        Bitmap bitmap1 = LoadBitmapImage("lowFreq.jpg");
+                        bitmap1 = crupAndScale(bitmap1, 450);
+                        bitmap = crupAndScale(bitmap, 450);
+                        bitmap  = overlay(bitmap1, bitmap);
+                        mImageView.setImageBitmap(HighPass(bitmap, 15));// TODO async
+
+                    }
+
 
                 } else {
                     ParcelFileDescriptor parcelFileDescriptor;
                     try {
                         parcelFileDescriptor = getContentResolver().openFileDescriptor(selectedImageUri, "r");
                         FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-                        Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+                        Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor);
                         parcelFileDescriptor.close();
-                        mImageView.setImageBitmap(HighPass(image, 15));// TODO async
+                        if(filter_pass_option == REQUEST_IMAGE_CAPTURE_LOW_PASS) {
+                            mImageView.setImageBitmap(LowPass(bitmap, 15));// TODO async
+                        }
+                        else {
+
+
+                            Bitmap bitmap1 = LoadBitmapImage("lowFreq.jpg");
+                            bitmap1 = crupAndScale(bitmap1, 450);
+                            bitmap = crupAndScale(bitmap, 450);
+                            bitmap  = overlay(bitmap1, bitmap);
+                            mImageView.setImageBitmap(HighPass(bitmap, 15));// TODO async
+
+                        }
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
