@@ -19,7 +19,7 @@ import android.widget.Toast;
 public class DrawBoundaryService extends Service {
 //    private DrawBoundary db;
     private WindowManager windowManager;
-    private ImageView chatHead;
+    private ImageView faceBoundary;
     private String TAG = "DrawBoundaryService";
     @Override public IBinder onBind(Intent intent) {
         // Not used
@@ -38,10 +38,10 @@ public class DrawBoundaryService extends Service {
 //        Canvas c = new Canvas(b);
 //        db.draw(c);
 
-        chatHead = new ImageView(this);
+        faceBoundary = new ImageView(this);
         Bitmap bm = ImageProcessor.makeDst(2000, 3000);
-        chatHead.setImageBitmap(bm);
-//        chatHead.setImageResource(R.drawable.ic_launcher);
+        faceBoundary.setImageBitmap(bm);
+//        faceBoundary.setImageResource(R.drawable.ic_launcher);
 
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -50,11 +50,11 @@ public class DrawBoundaryService extends Service {
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                 PixelFormat.RGBA_8888);
 
-        params.gravity = Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL;
+        params.gravity = Gravity.CLIP_HORIZONTAL|Gravity.CLIP_VERTICAL;
         params.x = 0;
         params.y = 0;
 
-        windowManager.addView(chatHead, params);
+        windowManager.addView(faceBoundary, params);
 //        windowManager.addView(db,params);
 //        db.bringToFront();
 
@@ -65,7 +65,7 @@ public class DrawBoundaryService extends Service {
 //                windowManager.removeViewImmediate(db);
 //            }
 //        });
-        chatHead.setOnTouchListener(new View.OnTouchListener() {
+        faceBoundary.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
             private float initialTouchX;
@@ -85,7 +85,7 @@ public class DrawBoundaryService extends Service {
                     case MotionEvent.ACTION_MOVE:
                         params.x = initialX + (int) (event.getRawX() - initialTouchX);
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                        windowManager.updateViewLayout(chatHead, params);
+                        windowManager.updateViewLayout(faceBoundary, params);
                         return true;
                 }
                 return false;
@@ -96,6 +96,6 @@ public class DrawBoundaryService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (chatHead != null) windowManager.removeView(chatHead);
+        if (faceBoundary != null) windowManager.removeView(faceBoundary);
     }
 }

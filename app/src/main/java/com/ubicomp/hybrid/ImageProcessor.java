@@ -138,10 +138,9 @@ public class ImageProcessor {
     static Bitmap makeDst(int w, int h) {
         Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bm);
-        Paint p = new Paint();//Paint.ANTI_ALIAS_FLAG
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setColor(Color.argb(90,200,200,0));
         c.drawOval(new RectF(0, 0, w * 3 / 4, h * 3 / 4), p);
-
         return bm;
     }
 //    static private Mat Cv8Uto32f(){
