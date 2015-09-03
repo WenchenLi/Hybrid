@@ -20,6 +20,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
+import java.io.FileOutputStream;
 
 import static org.opencv.core.Core.BORDER_REFLECT;
 import static org.opencv.core.Core.add;
@@ -38,8 +39,8 @@ public class ImageProcessor {
         Imgproc.GaussianBlur(lowFreq, lowFreq,
                 new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1),
                 cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
-
-        Utils.matToBitmap(lowFreq,image);
+        Utils.matToBitmap(lowFreq, image);
+        SaveBitMapImage(image,"lowFreq.jpg");
         return image;
     }
     static Bitmap HighPass(Bitmap image, int cutoff_frequency){
@@ -53,8 +54,9 @@ public class ImageProcessor {
                 cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
         subtract(original, lowFreq, highFreq);
         add(highFreq, new Scalar(127.5, 127.5, 127.5, 127.5), highFreq);
-        highFreq.convertTo(highFreq,CvType.CV_8U);
-        Utils.matToBitmap(highFreq,image);
+        highFreq.convertTo(highFreq, CvType.CV_8U);
+        Utils.matToBitmap(highFreq, image);
+        SaveBitMapImage(image, "highFreq.jpg");
         return image;
     }
 
@@ -140,13 +142,42 @@ public class ImageProcessor {
         else
             Log.d(TAG, "Fail writing image to external storage");
     }
-    static private Mat LoadMatImage(String filename) {
-        Mat mIntermediateMat = new Mat();
+
+    static void SaveBitMapImage(Bitmap finalBitmap,String imageName) {
+
+        File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+//        File myDir = new File(root + "/Pictures");
+//        myDir.mkdirs();
+//        Random generator = new Random();
+//        int n = 10000;
+//        n = generator.nextInt(n);
+//        String fname = "Image-"+ n +".jpg";
+        File file = new File (root, imageName);
+        if (file.exists ()) file.delete();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    static  Mat LoadMatImage(String filename) {
+        Mat IntermediateMat = new Mat();
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         File file = new File(path, filename);
         filename = file.toString();
-        mIntermediateMat = Imgcodecs.imread(filename);
-        return mIntermediateMat;
+        IntermediateMat = Imgcodecs.imread(filename);
+        return IntermediateMat;
+    }
+    static  Bitmap LoadBitmapImage(String filename) {
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File file = new File(path, filename);
+        filename = file.toString();
+        Bitmap bm = BitmapFactory.decodeFile(filename);
+        return bm;
     }
     static Bitmap makeDst(int w, int h) {
         Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
@@ -155,6 +186,18 @@ public class ImageProcessor {
         p.setColor(Color.argb(90,200,200,0));
         c.drawOval(new RectF(0, 0, w * 3 / 4, h * 3 / 4), p);
         return bm;
+    }
+
+    static Bitmap overlay(Bitmap lowFreq, Bitmap highFreq) {
+        Bitmap bmOverlay = Bitmap.createBitmap(lowFreq.getWidth(), lowFreq.getHeight(), lowFreq.getConfig());
+        Mat highFreqMat = new Mat(lowFreq.getHeight(),lowFreq.getWidth(),CvType.CV_8U);
+        Mat lowFreqMat = new Mat(lowFreq.getHeight(),lowFreq.getWidth(),CvType.CV_8U);
+        Mat hybrid = new Mat(lowFreq.getHeight(),lowFreq.getWidth(),CvType.CV_8U);
+        Utils.bitmapToMat(lowFreq,lowFreqMat);
+        Utils.bitmapToMat(highFreq,highFreqMat);
+        add(lowFreqMat, highFreqMat, hybrid);
+        Utils.matToBitmap(hybrid,bmOverlay);
+        return bmOverlay;
     }
 //    static private Mat Cv8Uto32f(){
 //        Mat maskColor = new Mat( mBitmapPintar.getHeight(), mBitmapPintar.getWidth(), CvType.CV_8UC3);

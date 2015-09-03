@@ -22,21 +22,22 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Mat;
 
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import static com.ubicomp.hybrid.ImageProcessor.HybridTestToBitmap;
-import static com.ubicomp.hybrid.ImageProcessor.HybridToBitmap;
+import static com.ubicomp.hybrid.ImageProcessor.HighPass;
+import static com.ubicomp.hybrid.ImageProcessor.LoadBitmapImage;
+import static com.ubicomp.hybrid.ImageProcessor.LowPass;
+import static com.ubicomp.hybrid.ImageProcessor.overlay;
 
 
 public class MainActivity extends AppCompatActivity implements OnTouchListener {
@@ -45,13 +46,13 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     private Button mTake;
     private static  final String mStoragePath = Environment.getExternalStorageDirectory().getPath()+"/Hybrid/";
 
-    static final int REQUEST_IMAGE_CAPTURE1 = 1;
-    static final int REQUEST_IMAGE_CAPTURE2 = 2;
+    static final int REQUEST_IMAGE_CAPTURE_LOW_PASS = 1;
+    static final int REQUEST_IMAGE_CAPTURE_HIGH_PASS = 2;
     static final int CHOOSE_IMAGE_REQUEST = 3;
-
+    private int filter_pass_option;
     private Intent mDrawBoundaryIntent;
     private Button mShare;
-
+    private Switch mFilterSwitch;
     private static final String TAG = "MainActivity";
 //    private static final float MIN_ZOOM = 1f,MAX_ZOOM = 1f;
 
@@ -80,6 +81,34 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
             Log.v(TAG,"fail loading opencv");
             // Handle initialization error
         }
+
+        mFilterSwitch =  (Switch) findViewById(R.id.filterSwitch);
+        mFilterSwitch.setText("Low Pass filter on");
+        filter_pass_option = REQUEST_IMAGE_CAPTURE_LOW_PASS;
+        //attach a listener to check for changes in state
+        mFilterSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+
+                if (isChecked) {
+                    filter_pass_option = REQUEST_IMAGE_CAPTURE_HIGH_PASS;
+                    mFilterSwitch.setText("High Pass filter on");
+
+
+                }
+                else {
+                    filter_pass_option = REQUEST_IMAGE_CAPTURE_LOW_PASS;
+                    mFilterSwitch.setText("Low Pass filter on");
+                }
+
+            }
+        });
+
+        //check the current state before we display the screen
+
+
         //set face boundary
         mDrawBoundaryIntent = new Intent(getApplicationContext(), DrawBoundaryService.class);
 
@@ -118,7 +147,11 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         mTake.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openCameraForResult(REQUEST_IMAGE_CAPTURE1,"first.bmp");
+                if(filter_pass_option == REQUEST_IMAGE_CAPTURE_LOW_PASS){
+                    openCameraForResult(filter_pass_option,"first.bmp");
+                }
+                else openCameraForResult(filter_pass_option,"second.bmp");
+
             }
         });
 
@@ -291,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
 //        startService(mDrawBoundaryIntent);
         Intent photo = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 //        String path = Environment.getExternalStorageDirectory().getPath()+"/";
-        Uri uri  = Uri.parse("file:///sdcard/"+picName);//"file:///sdcard/photo.jpg");
+        Uri uri  = Uri.parse("file:///sdcard/" + picName);//"file:///sdcard/"+picName
         photo.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uri);
         startActivityForResult(photo,requestCode);
     }
@@ -321,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
         // feature we can have later: the object detection and
         // search the boundary of the image.
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == REQUEST_IMAGE_CAPTURE1) {
+            if (requestCode == REQUEST_IMAGE_CAPTURE_LOW_PASS) {
 
                 File file = new File(Environment.getExternalStorageDirectory().getPath(), "first.bmp");
                 Uri uri = Uri.fromFile(file);
@@ -329,8 +362,9 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                 try {
                     bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     bitmap = crupAndScale(bitmap, 450); // if you mind scaling
+                    bitmap = LowPass(bitmap,10);//TODO async
                     mImageView.setImageBitmap(bitmap);
-                    openCameraForResult(REQUEST_IMAGE_CAPTURE2, "second.bmp");//TODO  later worry about 08-31 12:06:40.450  14320-14320/com.ubicomp.hybrid E/ActivityThread﹕ Performing stop of activity that is not resumed: {com.ubicomp.hybrid/com.ubicomp.hybrid.MainActivity}
+//                    openCameraForResult(REQUEST_IMAGE_CAPTURE_HIGH_PASS, "second.bmp");//TODO  later worry about 08-31 12:06:40.450  14320-14320/com.ubicomp.hybrid E/ActivityThread﹕ Performing stop of activity that is not resumed: {com.ubicomp.hybrid/com.ubicomp.hybrid.MainActivity}
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -338,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                     e.printStackTrace();
                 }
 
-            } else if (requestCode == REQUEST_IMAGE_CAPTURE2) {
+            } else if (requestCode == REQUEST_IMAGE_CAPTURE_HIGH_PASS) {
                     try {
                         stopService(mDrawBoundaryIntent);
                     } catch (NullPointerException e) {
@@ -350,12 +384,19 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                     try {
                         bitmap2 = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                         bitmap2 = crupAndScale(bitmap2, 450); // if you mind scaling
-                        File file1 = new File(Environment.getExternalStorageDirectory().getPath(), "first.bmp");
-                        Uri uri1 = Uri.fromFile(file1);
-                        Bitmap bitmap1 = MediaStore.Images.Media.getBitmap(getContentResolver(), uri1);
-                        bitmap1 = crupAndScale(bitmap1, 450); // if you mind scaling
+                        bitmap2 = HighPass(bitmap2, 10);//TODO async
+//                        SaveBitMapImage(bitmap2,"highPass.jpg");
 
-                        mImageView.setImageBitmap(HybridToBitmap(this, bitmap1, bitmap2));
+//                        File file1 = new File(Environment.getExternalStorageDirectory().getPath(), "first.bmp");
+//                        Uri uri1 = Uri.fromFile(file1);
+//                        Bitmap bitmap1 = MediaStore.Images.Media.getBitmap(getContentResolver(), uri1);
+//                        bitmap1 = crupAndScale(bitmap1, 450); // if you mind scaling
+//                        Bitmap hybrid = HybridToBitmap(this, bitmap1, bitmap2);
+
+                        Bitmap bitmap1 = LoadBitmapImage("lowFreq.jpg");
+                        bitmap2  = overlay(bitmap1,bitmap2);
+//                        SaveBitMapImage(bitmap2, "Hybrid.jpg");
+                        mImageView.setImageBitmap(bitmap2);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
@@ -367,7 +408,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                 if (Build.VERSION.SDK_INT < 19) {
                     selectedImagePath = getPath(selectedImageUri);
                     Bitmap bitmap = BitmapFactory.decodeFile(selectedImagePath);
-                    //                imageView.setImageBitmap(bitmap);
+                    mImageView.setImageBitmap(LowPass(bitmap,15));// TODO async
 
                 } else {
                     ParcelFileDescriptor parcelFileDescriptor;
@@ -376,8 +417,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                         FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
                         Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
                         parcelFileDescriptor.close();
-                        //                    imageView.setImageBitmap(image);
-
+                        mImageView.setImageBitmap(HighPass(image, 15));// TODO async
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
@@ -394,7 +434,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
     @Override
     public void onResume() {
         super.onResume();
-        Log.v(TAG,"onresume");
+        Log.v(TAG,"onResume");
         overridePendingTransition(0, 0);
         try{
             stopService(mDrawBoundaryIntent);
@@ -402,28 +442,6 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
 
         }
     }
-
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
-
-                    Mat mat = new Mat();
-                    // Utils.bitmapToMat(input, mat);
-                    //     Highgui.imwrite("mat.jpg", mat);
-//                    mImageView.setImageBitmap(input);
-                    mImageView.setImageBitmap(HybridTestToBitmap(getApplicationContext()));
-
-                } //break;
-                default:
-                {
-                    super.onManagerConnected(status);
-                } break;
-            }
-        }
-    };
 
     @Override
     public void onRestart() {
@@ -470,7 +488,7 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
 //        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
 //            takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT,
 //                    imageUri);
-//            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE1);
+//            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE_LOW_PASS);
 //        }
 //    }
 }
