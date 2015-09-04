@@ -44,17 +44,17 @@ public class ImageProcessor {
         return image;
     }
     static Bitmap HighPass(Bitmap image, int cutoff_frequency){
-        Mat original = new Mat(image.getHeight(),image.getWidth(),CvType.CV_32F);
-        Mat lowFreq = new Mat(image.getHeight(),image.getWidth(),CvType.CV_32F);
-        Mat highFreq = new Mat(image.getHeight(),image.getWidth(),CvType.CV_32F);
+        Mat original = new Mat(image.getHeight(),image.getWidth(),CvType.CV_8U);
+        Mat lowFreq = new Mat(image.getHeight(),image.getWidth(),CvType.CV_8U);
+        Mat highFreq = new Mat(image.getHeight(),image.getWidth(),CvType.CV_8U);
 
         Utils.bitmapToMat(image, original);
         Imgproc.GaussianBlur(original, lowFreq,
                 new Size(cutoff_frequency * 4 + 1, cutoff_frequency * 4 + 1),
                 cutoff_frequency, cutoff_frequency, BORDER_REFLECT);
         subtract(original, lowFreq, highFreq);
-        add(highFreq, new Scalar(127.5, 127.5, 127.5, 127.5), highFreq);
-        highFreq.convertTo(highFreq, CvType.CV_8U);
+        add(highFreq, new Scalar(90, 90, 90, 90), highFreq);
+//        highFreq.convertTo(highFreq, CvType.CV_8U);
         Utils.matToBitmap(highFreq, image);
         SaveBitMapImage(image, "highFreq.jpg");
         return image;
@@ -176,8 +176,7 @@ public class ImageProcessor {
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         File file = new File(path, filename);
         filename = file.toString();
-        Bitmap bm = BitmapFactory.decodeFile(filename);
-        return bm;
+        return BitmapFactory.decodeFile(filename);
     }
     static Bitmap makeDst(int w, int h) {
         Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);

@@ -409,16 +409,13 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                     selectedImagePath = getPath(selectedImageUri);
                     Bitmap bitmap = BitmapFactory.decodeFile(selectedImagePath);
                     if(filter_pass_option == REQUEST_IMAGE_CAPTURE_LOW_PASS) {
-                        mImageView.setImageBitmap(LowPass(bitmap, 15));// TODO async
+                        mImageView.setImageBitmap(LowPass(bitmap, 7));// TODO async
                     }
                     else {
-
                         Bitmap bitmap1 = LoadBitmapImage("lowFreq.jpg");
                         bitmap1 = crupAndScale(bitmap1, 450);
                         bitmap = crupAndScale(bitmap, 450);
-                        bitmap  = overlay(bitmap1, bitmap);
-                        mImageView.setImageBitmap(HighPass(bitmap, 15));// TODO async
-
+                        mImageView.setImageBitmap(overlay(bitmap1, bitmap));// TODO async
                     }
 
 
@@ -430,17 +427,13 @@ public class MainActivity extends AppCompatActivity implements OnTouchListener {
                         Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor);
                         parcelFileDescriptor.close();
                         if(filter_pass_option == REQUEST_IMAGE_CAPTURE_LOW_PASS) {
-                            mImageView.setImageBitmap(LowPass(bitmap, 15));// TODO async
+                            mImageView.setImageBitmap(LowPass(bitmap, 7));// TODO async
                         }
                         else {
-
-
                             Bitmap bitmap1 = LoadBitmapImage("lowFreq.jpg");
                             bitmap1 = crupAndScale(bitmap1, 450);
                             bitmap = crupAndScale(bitmap, 450);
-                            bitmap  = overlay(bitmap1, bitmap);
-                            mImageView.setImageBitmap(HighPass(bitmap, 15));// TODO async
-
+                            mImageView.setImageBitmap(overlay(bitmap1, bitmap));// TODO async
                         }
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
